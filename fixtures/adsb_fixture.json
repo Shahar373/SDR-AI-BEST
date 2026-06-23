@@ -1,0 +1,38 @@
+{
+  "decoder": "decode_adsb",
+  "timestamp": "2026-06-23T08:00:00+00:00",
+  "duration_secs": 60,
+  "aircraft_count": 3,
+  "aircraft": [
+    {
+      "icao": "[UNTRUSTED RF DATA] 738065",
+      "callsign": "[UNTRUSTED RF DATA] ELY001",
+      "lat": 32.0085,
+      "lon": 34.8878,
+      "alt_ft": 5500,
+      "speed_kt": 210,
+      "squawk": "[UNTRUSTED RF DATA] 2342",
+      "messages": 47
+    },
+    {
+      "icao": "[UNTRUSTED RF DATA] 4B1A23",
+      "callsign": "[UNTRUSTED RF DATA] THY304",
+      "lat": 31.9950,
+      "lon": 34.7811,
+      "alt_ft": 37000,
+      "speed_kt": 468,
+      "squawk": "[UNTRUSTED RF DATA] 5421",
+      "messages": 112
+    },
+    {
+      "icao": "[UNTRUSTED RF DATA] 400F2B",
+      "callsign": null,
+      "lat": null,
+      "lon": null,
+      "alt_ft": null,
+      "speed_kt": null,
+      "squawk": null,
+      "messages": 3
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "decoder": "decode_acars",
+  "timestamp": "2026-06-23T08:00:00+00:00",
+  "freq_hz": 131725000,
+  "duration_secs": 300,
+  "message_count": 2,
+  "messages": [
+    {
+      "mode": "[UNTRUSTED RF DATA] 2",
+      "label": "[UNTRUSTED RF DATA] H1",
+      "block_id": "[UNTRUSTED RF DATA] 4",
+      "ack": "[UNTRUSTED RF DATA] N",
+      "tail": "[UNTRUSTED RF DATA] 4X-ELF",
+      "flight": "[UNTRUSTED RF DATA] LY1234",
+      "msg": "[UNTRUSTED RF DATA] #DFB/END",
+      "text": null,
+      "err": "[UNTRUSTED RF DATA] 0"
+    },
+    {
+      "mode": "[UNTRUSTED RF DATA] 2",
+      "label": "[UNTRUSTED RF DATA] SQ",
+      "block_id": "[UNTRUSTED RF DATA] 1",
+      "ack": "[UNTRUSTED RF DATA] N",
+      "tail": "[UNTRUSTED RF DATA] 4X-EKI",
+      "flight": "[UNTRUSTED RF DATA] LY082",
+      "msg": null,
+      "text": "[UNTRUSTED RF DATA] POS/3205.0N03445.0E,0800,350,455T,0821",
+      "err": "[UNTRUSTED RF DATA] 0"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "decoder": "decode_ais",
+  "timestamp": "2026-06-23T08:00:00+00:00",
+  "duration_secs": 120,
+  "vessel_count": 2,
+  "vessels": [
+    {
+      "mmsi": "[UNTRUSTED RF DATA] 212345678",
+      "shipname": "[UNTRUSTED RF DATA] HAIFA STAR",
+      "callsign": "[UNTRUSTED RF DATA] 4XAB1",
+      "lat": 32.8240,
+      "lon": 34.9970,
+      "sog": 8.4,
+      "cog": 178.0,
+      "heading": 180,
+      "status": 0,
+      "msg_type": 1
+    },
+    {
+      "mmsi": "[UNTRUSTED RF DATA] 319087000",
+      "shipname": "[UNTRUSTED RF DATA] MSC ATHENS",
+      "callsign": "[UNTRUSTED RF DATA] ZEYD9",
+      "lat": 32.8651,
+      "lon": 35.0123,
+      "sog": 12.1,
+      "cog": 5.3,
+      "heading": 6,
+      "status": 0,
+      "msg_type": 1
+    }
+  ]
+}

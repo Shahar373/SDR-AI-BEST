@@ -1,0 +1,10 @@
+{
+  "decoder": "capture_noaa",
+  "timestamp": "2026-06-23T08:00:00+00:00",
+  "freq_hz": 137912500,
+  "duration_secs": 900,
+  "image_path": "/home/user/sdr-data/artifacts/noaa-apt-dry-run-fixture.png",
+  "size_bytes": 1048576,
+  "retain_until": "2026-07-23T08:00:00+00:00",
+  "retain_days": 30
+}

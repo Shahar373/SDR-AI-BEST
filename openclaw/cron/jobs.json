@@ -30,5 +30,13 @@
     "session": "isolated",
     "agent": "sdr-agent",
     "prompt": "Generate the weekly spectrum-intelligence article. Call write_article with topic='weekly_summary' and time_window='7d'. Then call council_review on the draft. Save the final draft to the articles directory. Send the operator a Telegram message with the article title, a 3-sentence summary, and the file path — and ask for approval before publishing anywhere. Do NOT publish automatically."
+  },
+  {
+    "id": "artifact-cleanup",
+    "description": "Daily cleanup of expired artifacts (retain_until past) — keeps disk lean",
+    "cron": "30 3 * * *",
+    "session": "isolated",
+    "agent": "sdr-agent",
+    "prompt": "Run artifact cleanup to free disk space: execute 'python3 skills-scripts/artifact_cleanup.py'. Report how many files were deleted and how many MB were freed. If freed_mb > 100, ping the operator with a note."
   }
 ]
