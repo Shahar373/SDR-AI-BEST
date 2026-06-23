@@ -1,0 +1,56 @@
+{
+  "_comment": "OpenClaw gateway configuration for the SDR spectrum-analysis agent.",
+
+  "gateway": {
+    "agents": ["sdr-agent"],
+    "default_agent": "sdr-agent"
+  },
+
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "bot_token": "${TELEGRAM_BOT_TOKEN}",
+      "allowed_chat_ids": ["${TELEGRAM_CHAT_ID}"],
+      "startup_message": "🟢 SDR agent online. No active session. Use /session_start to begin.",
+      "parse_mode": "Markdown"
+    }
+  },
+
+  "security": {
+    "installPolicy": "strict",
+    "allowThirdPartySkills": false,
+    "skillsRoot": "/opt/sdr-agent/openclaw/skills",
+    "auditLog": "${SDR_DATA_DIR}/logs/audit.jsonl"
+  },
+
+  "sandbox": {
+    "enabled": true,
+    "docker": {
+      "image": "sdr-agent:latest",
+      "user": "sdruser",
+      "mounts": [
+        { "host": "${SDR_DATA_DIR}", "container": "/data/sdr", "readonly": false },
+        { "host": "/opt/sdr-agent",  "container": "/opt/sdr-agent", "readonly": true }
+      ],
+      "devices": [
+        "/dev/bus/usb"
+      ],
+      "network": {
+        "mode": "allowlist",
+        "allow": [
+          "api.anthropic.com",
+          "api.telegram.org"
+        ]
+      },
+      "memory": "2g",
+      "cpus": "2.0"
+    }
+  },
+
+  "providers": {
+    "anthropic": {
+      "api_key": "${ANTHROPIC_API_KEY}",
+      "base_url": "https://api.anthropic.com"
+    }
+  }
+}

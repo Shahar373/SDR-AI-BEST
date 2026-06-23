@@ -1,0 +1,34 @@
+[
+  {
+    "id": "broad-sweep",
+    "description": "Full-spectrum occupancy sweep every 2 hours",
+    "cron": "0 */2 * * *",
+    "session": "isolated",
+    "agent": "sdr-agent",
+    "prompt": "Run a full-spectrum sweep using sweep.py (start_hz=1000, stop_hz=2000000000). Check the active session for antenna coverage. Update occupancy in the knowledge base. Return a JSON summary of what you found: number of signals, bands with activity, anything new or changed vs the previous sweep. Keep the prompt short."
+  },
+  {
+    "id": "anomaly-check",
+    "description": "Heartbeat: compare state vs catalog baseline every 30 minutes",
+    "cron": "*/30 * * * *",
+    "session": "main",
+    "agent": "sdr-agent",
+    "prompt": "Heartbeat check. Query the catalog for signals seen in the last 30 minutes. Compare against the baseline (signals seen regularly over the last 7 days). Report ONLY signals that are: (1) genuinely new (not in catalog), (2) a known signal that has disappeared, (3) a signal appearing at an unusual time, (4) a signal with changed characteristics. If nothing is anomalous, say nothing — do not send a Telegram message. If anomalies are found, ping the operator with a concise report."
+  },
+  {
+    "id": "daily-digest",
+    "description": "Daily RF landscape digest at 20:00 local",
+    "cron": "0 17 * * *",
+    "session": "isolated",
+    "agent": "sdr-agent",
+    "prompt": "Compose the daily RF digest and send it to the operator via Telegram. Include: (1) occupancy summary by major band (HF/VHF/UHF/SHF), (2) number of identified vs unknown emitters active today, (3) new signals first seen today, (4) signals that disappeared today, (5) any anomalies. Format as a readable Telegram message, Hebrew or English. Draw only from catalog_query — do not fabricate. Timestamp: today."
+  },
+  {
+    "id": "weekly-article",
+    "description": "Weekly Hebrew spectrum-intelligence article (Saturdays 09:00)",
+    "cron": "0 6 * * 6",
+    "session": "isolated",
+    "agent": "sdr-agent",
+    "prompt": "Generate the weekly spectrum-intelligence article. Call write_article with topic='weekly_summary' and time_window='7d'. Then call council_review on the draft. Save the final draft to the articles directory. Send the operator a Telegram message with the article title, a 3-sentence summary, and the file path — and ask for approval before publishing anywhere. Do NOT publish automatically."
+  }
+]

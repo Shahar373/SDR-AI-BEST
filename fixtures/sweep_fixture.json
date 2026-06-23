@@ -1,0 +1,18 @@
+{
+  "sweep_id": "fixture-sweep-001",
+  "session_id": "fixture-session-001",
+  "start_hz": 88000000,
+  "stop_hz": 108000000,
+  "timestamp": "2026-06-23T18:00:00+00:00",
+  "antenna_warnings": [],
+  "signals": [
+    {"center_hz": 88400000,  "bandwidth_hz": 200000, "peak_dbfs": -42.1, "occupancy": 0.98},
+    {"center_hz": 90300000,  "bandwidth_hz": 200000, "peak_dbfs": -47.3, "occupancy": 0.92},
+    {"center_hz": 92100000,  "bandwidth_hz": 200000, "peak_dbfs": -38.7, "occupancy": 0.97},
+    {"center_hz": 95600000,  "bandwidth_hz": 200000, "peak_dbfs": -51.2, "occupancy": 0.85},
+    {"center_hz": 98000000,  "bandwidth_hz": 200000, "peak_dbfs": -35.2, "occupancy": 0.99},
+    {"center_hz": 100800000, "bandwidth_hz": 200000, "peak_dbfs": -43.8, "occupancy": 0.94},
+    {"center_hz": 103600000, "bandwidth_hz": 200000, "peak_dbfs": -44.0, "occupancy": 0.95},
+    {"center_hz": 107500000, "bandwidth_hz": 200000, "peak_dbfs": -48.9, "occupancy": 0.88}
+  ]
+}

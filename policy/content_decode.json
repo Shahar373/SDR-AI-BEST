@@ -1,0 +1,25 @@
+{
+  "_comment": "Operator-owned content-decode policy. Edit this file to change what the agent is allowed to decode. The agent will not decode any class without this file being present and valid.",
+  "version": 1,
+  "operator": "shahar",
+  "jurisdiction": "IL",
+  "signed_date": "2026-06-23",
+  "all_classes": true,
+  "voice_content_decode": true,
+  "allowed_classes": [
+    "adsb",
+    "ais",
+    "acars",
+    "aprs",
+    "ism",
+    "noaa",
+    "pocsag",
+    "flex",
+    "ft8",
+    "wspr",
+    "voice_am",
+    "voice_fm",
+    "voice_ssb"
+  ],
+  "note": "Operator takes full legal responsibility under Israeli law (Communications Law 5742-1982 and subordinate regulations). This configuration enables decoding of all listed classes including voice communications received off-the-air. No content is published or transmitted; all decoded material is stored locally and used only for spectrum-intelligence research and analysis."
+}

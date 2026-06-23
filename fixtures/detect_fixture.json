@@ -1,0 +1,23 @@
+{
+  "detect_id": "fixture-detect-001",
+  "session_id": "fixture-session-001",
+  "center_hz": 433920000,
+  "span_hz": 2000000,
+  "timestamp": "2026-06-23T18:05:00+00:00",
+  "signals": [
+    {
+      "center_hz": 433920000,
+      "bandwidth_hz": 100000,
+      "kind": "burst",
+      "snr": 22.4,
+      "notes": "Repeating bursts ~0.5s on/5s off — typical 433 MHz ISM remote"
+    },
+    {
+      "center_hz": 434175000,
+      "bandwidth_hz": 50000,
+      "kind": "burst",
+      "snr": 14.1,
+      "notes": "Narrower burst, likely weather station"
+    }
+  ]
+}

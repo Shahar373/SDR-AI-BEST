@@ -1,0 +1,54 @@
+{
+  "model": "anthropic/claude-opus-4-8",
+  "failover": [
+    { "model": "anthropic/claude-opus-4-8" },
+    { "model": "anthropic/claude-sonnet-4-6" }
+  ],
+  "memory": {
+    "enabled": true,
+    "scope": "agent",
+    "notes": "Soft conventions and narrative continuity only. Hard state lives in session/current.json and sdr-knowledge.sqlite."
+  },
+  "tools": {
+    "allow": [
+      "exec",
+      "telegram_send",
+      "memory_read",
+      "memory_write",
+      "read_file",
+      "write_file"
+    ],
+    "deny": [
+      "browser",
+      "http_request",
+      "install_package",
+      "shell_unrestricted"
+    ]
+  },
+  "exec": {
+    "allowed_commands": [
+      "python3 skills-scripts/session.py",
+      "python3 skills-scripts/rf_lock.py",
+      "python3 skills-scripts/sweep.py",
+      "python3 skills-scripts/detect.py",
+      "python3 skills-scripts/capture_iq.py",
+      "python3 skills-scripts/spectrogram.py",
+      "python3 skills-scripts/characterize.py",
+      "python3 skills-scripts/classify_signal.py",
+      "python3 skills-scripts/identify.py",
+      "python3 skills-scripts/decoders/decode_adsb.py",
+      "python3 skills-scripts/decoders/decode_ais.py",
+      "python3 skills-scripts/decoders/decode_acars.py",
+      "python3 skills-scripts/decoders/decode_aprs.py",
+      "python3 skills-scripts/decoders/decode_ism.py",
+      "python3 skills-scripts/decoders/capture_noaa.py",
+      "python3 skills-scripts/catalog.py",
+      "python3 skills-scripts/signal_track.py",
+      "python3 skills-scripts/write_article.py",
+      "python3 skills-scripts/council_review.py",
+      "python3 skills-scripts/sanitize_rf_text.py",
+      "python3 skills-scripts/export_stub.py"
+    ],
+    "working_dir": "/opt/sdr-agent"
+  }
+}

@@ -1,0 +1,5 @@
+db/signal_reference.db
+__pycache__/
+*.pyc
+.env
+*.sqlite

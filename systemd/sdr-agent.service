@@ -1,0 +1,35 @@
+[Unit]
+Description=SDR Spectrum Analysis Agent (OpenClaw)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sdruser
+Group=sdruser
+WorkingDirectory=/opt/sdr-agent
+
+# Load environment from .env file
+EnvironmentFile=/opt/sdr-agent/.env
+
+# OpenClaw gateway start
+ExecStart=/usr/local/bin/openclaw gateway start --config /opt/sdr-agent/openclaw/openclaw.config.json
+
+# Graceful stop: tell OpenClaw to shut down cleanly
+ExecStop=/usr/local/bin/openclaw gateway stop
+
+Restart=on-failure
+RestartSec=10s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sdr-agent
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ReadWritePaths=/data/sdr /dev/shm/sdr-iq
+# USB device access for RSP1B
+DeviceAllow=/dev/bus/usb rw
+
+[Install]
+WantedBy=multi-user.target

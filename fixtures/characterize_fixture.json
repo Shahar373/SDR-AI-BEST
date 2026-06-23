@@ -1,0 +1,20 @@
+{
+  "characterize_id": "fixture-char-001",
+  "source": "fixture",
+  "timestamp": "2026-06-23T18:06:00+00:00",
+  "feature_vector": {
+    "center_hz": 433920000,
+    "bandwidth_hz": 100000,
+    "modulation_family": "FSK",
+    "baud_estimate": 4800,
+    "kind": "burst",
+    "burst_duration_ms": 480,
+    "burst_interval_s": 5.1,
+    "channel_spacing_hz": null,
+    "snr": 22.4,
+    "spectral_flatness": 0.12,
+    "instantaneous_freq_dev_hz": 50000,
+    "confidence": 0.74,
+    "notes": "Two-level FSK, 50 kHz deviation, consistent with OOK/FSK 433 MHz ISM device"
+  }
+}
