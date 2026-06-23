@@ -1,0 +1,30 @@
+{
+  "decoder": "decode_aprs",
+  "timestamp": "2026-06-23T08:00:00+00:00",
+  "duration_secs": 120,
+  "center_hz": 144800000,
+  "packet_count": 3,
+  "packets": [
+    {
+      "raw": "[UNTRUSTED RF DATA] 4X1AA-9>APRS,WIDE1-1,WIDE2-1:!3214.50N/03456.00E>090/030/A=000120",
+      "source": "[UNTRUSTED RF DATA] 4X1AA-9",
+      "lat": 32.2417,
+      "lon": 34.9333,
+      "info": "[UNTRUSTED RF DATA] >090/030/A=000120"
+    },
+    {
+      "raw": "[UNTRUSTED RF DATA] 4X5RF>APRS,DIGI*:;EVNT-TEL*111111z3213.00N/03447.00Ek",
+      "source": "[UNTRUSTED RF DATA] 4X5RF",
+      "lat": null,
+      "lon": null,
+      "info": "[UNTRUSTED RF DATA] ;EVNT-TEL*111111z3213.00N/03447.00Ek"
+    },
+    {
+      "raw": "[UNTRUSTED RF DATA] 4X1TA-7>APDR15,TCPIP*,qAC,T2ISRAEL:!3207.12N/03447.01E$/A=000085 Hi",
+      "source": "[UNTRUSTED RF DATA] 4X1TA-7",
+      "lat": 32.119,
+      "lon": 34.7835,
+      "info": "[UNTRUSTED RF DATA] $/A=000085 Hi"
+    }
+  ]
+}

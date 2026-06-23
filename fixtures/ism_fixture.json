@@ -1,0 +1,41 @@
+{
+  "decoder": "decode_ism",
+  "timestamp": "2026-06-23T08:00:00+00:00",
+  "center_hz": 433920000,
+  "duration_secs": 60,
+  "device_count": 4,
+  "devices": [
+    {
+      "model": "[UNTRUSTED RF DATA] Bresser-Weather",
+      "id": "[UNTRUSTED RF DATA] 211",
+      "channel": 1,
+      "temperature_C": 28.4,
+      "humidity": 62,
+      "rain_mm": 0.0,
+      "wind_avg_km_h": 5.2,
+      "wind_max_km_h": 9.1,
+      "time": "2026-06-23 08:00:01"
+    },
+    {
+      "model": "[UNTRUSTED RF DATA] Interlogix-Security",
+      "id": "[UNTRUSTED RF DATA] 4456789",
+      "channel": "[UNTRUSTED RF DATA] 0",
+      "state": "[UNTRUSTED RF DATA] closed",
+      "time": "2026-06-23 08:00:08"
+    },
+    {
+      "model": "[UNTRUSTED RF DATA] Rubicson-Temperature",
+      "id": "[UNTRUSTED RF DATA] 88",
+      "channel": 2,
+      "temperature_C": 26.1,
+      "humidity": 55,
+      "time": "2026-06-23 08:00:12"
+    },
+    {
+      "model": "[UNTRUSTED RF DATA] Efergy-e2-classic",
+      "id": "[UNTRUSTED RF DATA] 5421",
+      "current_A": 8.3,
+      "time": "2026-06-23 08:00:20"
+    }
+  ]
+}
