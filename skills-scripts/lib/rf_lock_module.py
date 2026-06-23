@@ -70,9 +70,11 @@ def acquire(holder: str, timeout: int = 30):
 def status() -> dict:
     if not RF_LOCK_FILE.exists():
         return {"status": "free"}
-    # Try a non-blocking exclusive lock to see if the file is held
+    # Try a non-blocking exclusive lock to see if the file is held.
+    # Open append ("a") not write ("w") so probing never truncates a file
+    # another process is actively holding.
     try:
-        with open(RF_LOCK_FILE, "w") as fd:
+        with open(RF_LOCK_FILE, "a") as fd:
             try:
                 fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 fcntl.flock(fd, fcntl.LOCK_UN)

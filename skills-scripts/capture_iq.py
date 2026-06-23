@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from lib import session_store, rf_lock_module
+from lib import session_store, rf_lock_module, sdr_io
 from lib.env import (SDR_IQ_DIR, SDR_IQ_MAX_SECS, SDR_IQ_MAX_MB,
                      SDR_MAX_IQ_CAPTURES_PER_CYCLE, RUN_DIR, ensure_dirs)
 
@@ -42,38 +42,14 @@ def _write_counter(n: int) -> None:
 
 
 def _capture_live(center_hz: float, span_hz: float, secs: float, out_path: Path) -> dict:
+    sdr, stream = sdr_io.open_rx(center_hz, float(span_hz), agc=True)
     try:
-        import SoapySDR
-        import numpy as np
-    except ImportError as exc:
-        print(json.dumps({"error": "missing_dependency", "detail": str(exc),
-                          "tip": "Run provision/install.sh to install SoapySDR"}))
-        sys.exit(1)
+        buf = sdr_io.read_samples(sdr, stream, int(span_hz * secs), float(span_hz))
+    finally:
+        sdr_io.close(sdr, stream)
 
-    sdr = SoapySDR.Device({"driver": "SoapySDRPlay3"})
-    sdr.setSampleRate(SoapySDR.SOAPY_SDR_RX, 0, float(span_hz))
-    sdr.setFrequency(SoapySDR.SOAPY_SDR_RX, 0, float(center_hz))
-    sdr.setGainMode(SoapySDR.SOAPY_SDR_RX, 0, True)
-
-    stream = sdr.setupStream(SoapySDR.SOAPY_SDR_RX, SoapySDR.SOAPY_SDR_CF32)
-    sdr.activateStream(stream)
-
-    n_samples = int(span_hz * secs)
-    buf = np.zeros(n_samples, dtype=np.complex64)
-    got = 0
-    while got < n_samples:
-        chunk = np.zeros(min(1 << 16, n_samples - got), dtype=np.complex64)
-        sr = sdr.readStream(stream, [chunk], len(chunk))
-        if sr.ret <= 0:
-            break
-        buf[got:got + sr.ret] = chunk[:sr.ret]
-        got += sr.ret
-
-    sdr.deactivateStream(stream)
-    sdr.closeStream(stream)
-
-    buf[:got].astype(np.complex64).tofile(str(out_path))
-    return {"samples": got, "size_bytes": got * BYTES_PER_SAMPLE}
+    buf.astype("complex64").tofile(str(out_path))
+    return {"samples": len(buf), "size_bytes": len(buf) * BYTES_PER_SAMPLE}
 
 
 def main():

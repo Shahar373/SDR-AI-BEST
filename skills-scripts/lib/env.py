@@ -16,6 +16,7 @@ SDR_MAX_IQ_CAPTURES_PER_CYCLE = int(os.environ.get("SDR_MAX_IQ_CAPTURES_PER_CYCL
 
 SESSION_FILE      = SDR_DATA_DIR / "session" / "current.json"
 DB_PATH           = SDR_DATA_DIR / "sdr-knowledge.sqlite"
+SCHEMA_FILE       = Path(__file__).parent.parent.parent / "db" / "schema.sql"
 SIGNAL_REF_DB     = Path(__file__).parent.parent.parent / "db" / "signal_reference.db"
 ARTIFACTS_DIR     = SDR_DATA_DIR / "artifacts"
 RUN_DIR           = SDR_DATA_DIR / "run"

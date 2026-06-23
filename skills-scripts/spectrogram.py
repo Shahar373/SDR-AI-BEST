@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from lib import dsp, db, rf_lock_module
+from lib import dsp, db, rf_lock_module, sdr_io
 from lib.env import ARTIFACTS_DIR, ensure_dirs
 
 
@@ -48,29 +48,11 @@ def _render(iq, fs: float, center_hz: float, out_path: Path, title: str) -> None
 
 
 def _capture_live(center_hz: float, span_hz: float, secs: float):
-    import SoapySDR
-    import numpy as np
-
-    sdr = SoapySDR.Device({"driver": "SoapySDRPlay3"})
-    sdr.setSampleRate(SoapySDR.SOAPY_SDR_RX, 0, float(span_hz))
-    sdr.setFrequency(SoapySDR.SOAPY_SDR_RX, 0, float(center_hz))
-    sdr.setGainMode(SoapySDR.SOAPY_SDR_RX, 0, True)
-    stream = sdr.setupStream(SoapySDR.SOAPY_SDR_RX, SoapySDR.SOAPY_SDR_CF32)
-    sdr.activateStream(stream)
-
-    n_samples = int(span_hz * secs)
-    buf = np.zeros(n_samples, dtype=np.complex64)
-    got = 0
-    while got < n_samples:
-        chunk = np.zeros(min(1 << 16, n_samples - got), dtype=np.complex64)
-        sr = sdr.readStream(stream, [chunk], len(chunk))
-        if sr.ret <= 0:
-            break
-        buf[got:got + sr.ret] = chunk[:sr.ret]
-        got += sr.ret
-    sdr.deactivateStream(stream)
-    sdr.closeStream(stream)
-    return buf[:got]
+    sdr, stream = sdr_io.open_rx(center_hz, float(span_hz), agc=True)
+    try:
+        return sdr_io.read_samples(sdr, stream, int(span_hz * secs), float(span_hz))
+    finally:
+        sdr_io.close(sdr, stream)
 
 
 def main():

@@ -115,8 +115,6 @@ def _policy_allows(decoder: str | None) -> tuple[bool, str | None]:
         policy = json.loads(POLICY_FILE.read_text())
     except Exception:
         return False, cls
-    if policy.get("all_classes") and cls in policy.get("allowed_classes", []):
-        return True, cls
     return (cls in policy.get("allowed_classes", [])), cls
 
 

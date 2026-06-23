@@ -34,6 +34,23 @@ def _emitter_key(center_hz: float, modulation: str) -> str:
     return f"{int(round(center_hz, -3))}_{(modulation or 'UNKNOWN').upper()}"
 
 
+def _ensure_session_row(conn, session: dict | None, now: str) -> str:
+    """Ensure a sessions row exists for the FK and return its id."""
+    if session and session.get("session_id"):
+        conn.execute(
+            "INSERT OR IGNORE INTO sessions (id, location, antennas_json, goal, started_at) "
+            "VALUES (?,?,?,?,?)",
+            (session["session_id"], session.get("location", "?"),
+             json.dumps(session.get("antennas", []), ensure_ascii=False),
+             session.get("goal", "?"), session.get("started_at", now)))
+        return session["session_id"]
+    conn.execute(
+        "INSERT OR IGNORE INTO sessions (id, location, antennas_json, goal, started_at) "
+        "VALUES (?,?,?,?,?)",
+        ("no-session", "(none)", "[]", "ad-hoc observations outside a formal session", now))
+    return "no-session"
+
+
 def cmd_upsert(args) -> None:
     obs = json.loads(args.observation_json)
     center_hz = obs.get("center_hz")
@@ -45,10 +62,14 @@ def cmd_upsert(args) -> None:
     emitter_key = _emitter_key(center_hz, modulation)
     now = datetime.now(timezone.utc).isoformat()
 
-    session = session_store.read()
-    session_id = (session or {}).get("session_id", "no-session")
-
     conn = db.get_conn()
+    # Guarantee the observation's session_id satisfies the FK to sessions(id).
+    # An active session is already persisted by session.py start, but we
+    # INSERT OR IGNORE it again defensively; with no active session we record
+    # against a sentinel "no-session" row so ad-hoc observations never crash.
+    session = session_store.read()
+    session_id = _ensure_session_row(conn, session, now)
+
     existing = conn.execute(
         "SELECT id, observation_count FROM signals WHERE emitter_key=?",
         (emitter_key,)).fetchone()
