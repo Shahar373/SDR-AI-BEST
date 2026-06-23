@@ -5,7 +5,7 @@
     "cron": "0 */2 * * *",
     "session": "isolated",
     "agent": "sdr-agent",
-    "prompt": "Run a full-spectrum sweep using sweep.py (start_hz=1000, stop_hz=2000000000). Check the active session for antenna coverage. Update occupancy in the knowledge base. Return a JSON summary of what you found: number of signals, bands with activity, anything new or changed vs the previous sweep. Keep the prompt short."
+    "prompt": "Start of a sweep cycle: FIRST reset the IQ curiosity budget by running 'capture_iq.py --reset-budget' (this re-arms the per-cycle capture allowance). Then run a full-spectrum sweep using sweep.py (start_hz=1000, stop_hz=2000000000). Check the active session for antenna coverage. Update occupancy in the knowledge base. Return a JSON summary of what you found: number of signals, bands with activity, anything new or changed vs the previous sweep. Keep the prompt short."
   },
   {
     "id": "anomaly-check",

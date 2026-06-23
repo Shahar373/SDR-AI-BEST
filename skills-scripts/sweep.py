@@ -32,6 +32,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from lib import session_store, db
 from lib import rf_lock_module
+from lib import dsp
+from lib import sdr_io
 from lib.env import SIGNAL_REF_DB, ensure_dirs
 
 # RSP1B receivable range
@@ -87,78 +89,32 @@ def _check_antenna_coverage(start_hz: float, stop_hz: float, session: dict) -> l
 
 def _sweep_live(start_hz: float, stop_hz: float, chunk_hz: int, dwell: float) -> list[dict]:
     """Perform a real SoapySDR power sweep and return detected signals."""
-    try:
-        import SoapySDR
-        import numpy as np
-    except ImportError as exc:
-        print(json.dumps({"error": "missing_dependency", "detail": str(exc),
-                          "tip": "Run provision/install.sh to install SoapySDR"}))
-        sys.exit(1)
-
     signals = []
-    sdr = SoapySDR.Device({"driver": "SoapySDRPlay3"})
-    sdr.setSampleRate(SoapySDR.SOAPY_SDR_RX, 0, float(chunk_hz))
-    sdr.setAntenna(SoapySDR.SOAPY_SDR_RX, 0, "Antenna C")  # wideband port on RSP1B
-    sdr.setGainMode(SoapySDR.SOAPY_SDR_RX, 0, True)        # AGC on
+    # Cap per-chunk samples so the accumulation loop stays bounded in memory.
+    n_samples = max(int(chunk_hz * dwell), 8192)
 
-    stream = sdr.setupStream(SoapySDR.SOAPY_SDR_RX, SoapySDR.SOAPY_SDR_CF32)
-    sdr.activateStream(stream)
+    sdr, stream = sdr_io.open_rx(start_hz + chunk_hz / 2, float(chunk_hz),
+                                 antenna="Antenna C", agc=True)
+    try:
+        freq = start_hz
+        while freq < stop_hz:
+            center = freq + chunk_hz / 2
+            sdr_io.retune(sdr, center)
 
-    freq = start_hz
-    while freq < stop_hz:
-        center = freq + chunk_hz / 2
-        sdr.setFrequency(SoapySDR.SOAPY_SDR_RX, 0, center)
+            buf = sdr_io.read_samples(sdr, stream, n_samples, float(chunk_hz))
+            if len(buf) < 4096:
+                freq += chunk_hz
+                continue
 
-        n_samples = int(chunk_hz * dwell)
-        buf = np.zeros(n_samples, dtype=np.complex64)
-        sr = sdr.readStream(stream, [buf], n_samples)
-        if sr.ret <= 0:
+            # Power spectrum + contiguous-bin signal grouping (shared lib.dsp)
+            freqs, psd = dsp.welch_psd(buf, float(chunk_hz), nfft=4096)
+            psd_dbfs = dsp.to_db(psd)
+            threshold = dsp.noise_floor(psd_dbfs, pct=30) + SIGNAL_THRESHOLD_DB
+            signals.extend(dsp.group_signals(psd_dbfs, freqs, center, threshold))
+
             freq += chunk_hz
-            continue
-
-        # Power spectrum via Welch-style average
-        fft_size = min(4096, sr.ret)
-        n_frames = sr.ret // fft_size
-        psd = np.zeros(fft_size)
-        for i in range(n_frames):
-            frame = buf[i*fft_size:(i+1)*fft_size] * np.blackman(fft_size).astype(np.float32)
-            psd += np.abs(np.fft.fftshift(np.fft.fft(frame))) ** 2
-        psd /= max(n_frames, 1)
-        psd_dbfs = 10 * np.log10(psd + 1e-30)
-
-        noise_floor = np.percentile(psd_dbfs, 30)
-        threshold = noise_floor + SIGNAL_THRESHOLD_DB
-
-        # Find peaks above threshold
-        above = psd_dbfs > threshold
-        # Group contiguous bins into signals
-        in_signal = False
-        sig_start = 0
-        for i in range(fft_size):
-            if above[i] and not in_signal:
-                sig_start = i
-                in_signal = True
-            elif not above[i] and in_signal:
-                sig_end = i
-                in_signal = False
-                width_bins = sig_end - sig_start
-                center_bin = (sig_start + sig_end) // 2
-                bin_hz = chunk_hz / fft_size
-                sig_center = center - chunk_hz / 2 + center_bin * bin_hz
-                sig_bw = width_bins * bin_hz
-                peak = float(np.max(psd_dbfs[sig_start:sig_end]))
-                occupancy = float(np.mean(above[sig_start:sig_end]))
-                signals.append({
-                    "center_hz": round(sig_center),
-                    "bandwidth_hz": round(sig_bw),
-                    "peak_dbfs": round(peak, 1),
-                    "occupancy": round(occupancy, 3),
-                })
-
-        freq += chunk_hz
-
-    sdr.deactivateStream(stream)
-    sdr.closeStream(stream)
+    finally:
+        sdr_io.close(sdr, stream)
     return signals
 
 
