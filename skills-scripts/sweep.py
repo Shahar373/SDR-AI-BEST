@@ -32,6 +32,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from lib import session_store, db
 from lib import rf_lock_module
+from lib import dsp
 from lib.env import SIGNAL_REF_DB, ensure_dirs
 
 # RSP1B receivable range
@@ -116,44 +117,12 @@ def _sweep_live(start_hz: float, stop_hz: float, chunk_hz: int, dwell: float) ->
             freq += chunk_hz
             continue
 
-        # Power spectrum via Welch-style average
-        fft_size = min(4096, sr.ret)
-        n_frames = sr.ret // fft_size
-        psd = np.zeros(fft_size)
-        for i in range(n_frames):
-            frame = buf[i*fft_size:(i+1)*fft_size] * np.blackman(fft_size).astype(np.float32)
-            psd += np.abs(np.fft.fftshift(np.fft.fft(frame))) ** 2
-        psd /= max(n_frames, 1)
-        psd_dbfs = 10 * np.log10(psd + 1e-30)
-
-        noise_floor = np.percentile(psd_dbfs, 30)
-        threshold = noise_floor + SIGNAL_THRESHOLD_DB
-
-        # Find peaks above threshold
-        above = psd_dbfs > threshold
-        # Group contiguous bins into signals
-        in_signal = False
-        sig_start = 0
-        for i in range(fft_size):
-            if above[i] and not in_signal:
-                sig_start = i
-                in_signal = True
-            elif not above[i] and in_signal:
-                sig_end = i
-                in_signal = False
-                width_bins = sig_end - sig_start
-                center_bin = (sig_start + sig_end) // 2
-                bin_hz = chunk_hz / fft_size
-                sig_center = center - chunk_hz / 2 + center_bin * bin_hz
-                sig_bw = width_bins * bin_hz
-                peak = float(np.max(psd_dbfs[sig_start:sig_end]))
-                occupancy = float(np.mean(above[sig_start:sig_end]))
-                signals.append({
-                    "center_hz": round(sig_center),
-                    "bandwidth_hz": round(sig_bw),
-                    "peak_dbfs": round(peak, 1),
-                    "occupancy": round(occupancy, 3),
-                })
+        # Power spectrum + contiguous-bin signal grouping (shared lib.dsp)
+        buf = buf[:sr.ret]
+        freqs, psd = dsp.welch_psd(buf, float(chunk_hz), nfft=4096)
+        psd_dbfs = dsp.to_db(psd)
+        threshold = dsp.noise_floor(psd_dbfs, pct=30) + SIGNAL_THRESHOLD_DB
+        signals.extend(dsp.group_signals(psd_dbfs, freqs, center, threshold))
 
         freq += chunk_hz
 
