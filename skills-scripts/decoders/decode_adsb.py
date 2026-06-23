@@ -47,12 +47,21 @@ def _run_live(duration_secs: int) -> dict:
     tmpdir = tempfile.mkdtemp(prefix="dump1090-")
     aircraft_json = Path(tmpdir) / "aircraft.json"
 
+    # --net is required in FA builds to activate the JSON writer subsystem.
+    # Bind to loopback only; set all net ports to 0 to disable unnecessary servers.
     cmd = [
         BINARY,
         "--device-type", "sdrplay",
         "--write-json", tmpdir,
         "--write-json-every", "1",
         "--quiet",
+        "--net",
+        "--net-bind-address", "127.0.0.1",
+        "--net-ro-port", "0",
+        "--net-ri-port", "0",
+        "--net-bo-port", "0",
+        "--net-bi-port", "0",
+        "--net-sbs-port", "0",
     ]
 
     result: dict = {}
@@ -79,12 +88,16 @@ def _run_live(duration_secs: int) -> dict:
             try:
                 data = json.loads(aircraft_json.read_text())
                 for ac in data.get("aircraft", []):
+                    # alt_baro can be the string "ground" for surface aircraft
+                    alt_raw = ac.get("alt_baro")
+                    alt_ft  = alt_raw if isinstance(alt_raw, (int, float)) else None
                     aircraft.append({
                         "icao":     sanitize_value(ac.get("hex")),
                         "callsign": sanitize_value((ac.get("flight") or "").strip() or None),
                         "lat":      ac.get("lat"),
                         "lon":      ac.get("lon"),
-                        "alt_ft":   ac.get("alt_baro"),
+                        "alt_ft":   alt_ft,
+                        "on_ground": alt_raw == "ground",
                         "speed_kt": ac.get("gs"),
                         "squawk":   sanitize_value(ac.get("squawk")),
                         "messages": ac.get("messages", 0),

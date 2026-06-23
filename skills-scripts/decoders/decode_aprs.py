@@ -43,24 +43,27 @@ def _check_binary() -> str | None:
 
 
 def _fm_demod_to_s16le(iq, fs: float, out_rate: float) -> bytes:
-    """FM discriminator → resample → s16le bytes (in-memory, no disk I/O)."""
+    """FM discriminator → LPF → resample → s16le bytes (in-memory, no disk I/O)."""
     import numpy as np
     from lib.dsp import instantaneous_freq
     from math import gcd
-    from scipy.signal import resample_poly
+    from scipy.signal import butter, sosfiltfilt, resample_poly
 
-    ifreq = instantaneous_freq(iq, fs).astype(np.float32)
-    # Normalize to [-1, 1] by half the carrier bandwidth
-    half_bw = fs / 2.0
-    ifreq = np.clip(ifreq / half_bw, -1.0, 1.0)
+    ifreq = instantaneous_freq(iq, fs).astype(np.float64)
+
+    # Low-pass filter to audio bandwidth (~15 kHz) before normalization.
+    # Without this, wideband noise excursions in the 250 kHz capture window
+    # dominate the peak and compress the ±5 kHz APRS deviation toward zero.
+    lpf_cutoff = min(15000.0 / (fs / 2.0), 0.95)
+    sos = butter(4, lpf_cutoff, btype="low", output="sos")
+    ifreq = sosfiltfilt(sos, ifreq)
+
+    peak = float(np.max(np.abs(ifreq)))
+    if peak > 0:
+        ifreq /= peak
 
     g = gcd(int(out_rate), int(fs))
     audio = resample_poly(ifreq, int(out_rate) // g, int(fs) // g)
-
-    # Final normalize
-    peak = float(np.max(np.abs(audio)))
-    if peak > 0:
-        audio /= peak
 
     return (audio * 32767).clip(-32768, 32767).astype(np.int16).tobytes()
 
@@ -116,12 +119,15 @@ def _run_live(duration_secs: int) -> dict:
 
     raw_audio = _fm_demod_to_s16le(iq, float(CAPTURE_BW_HZ), float(AUDIO_RATE_HZ))
 
+    # -t raw = raw s16le mono from stdin; -a APRS = APRS decoder
+    # multimon-ng expects 22050 Hz by default for raw input (no -s flag needed)
+    audio_secs = len(raw_audio) // 2 // AUDIO_RATE_HZ
     try:
         result = subprocess.run(
-            [BINARY, "-t", "raw", "-s", "-a", "APRS", "-"],
+            [BINARY, "-t", "raw", "-a", "APRS", "-"],
             input=raw_audio,
             capture_output=True,
-            timeout=max(30, len(raw_audio) // AUDIO_RATE_HZ // 2 + 10),
+            timeout=max(30, audio_secs + 15),
         )
         output = result.stdout.decode(errors="replace")
     except subprocess.TimeoutExpired:

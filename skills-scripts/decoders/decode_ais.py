@@ -49,7 +49,11 @@ def _parse_vessel(msg: dict) -> dict:
     for k in _NUM_FIELDS:
         if k in msg:
             vessel[k] = msg[k]
-    vessel["msg_type"] = msg.get("type")
+    # msg_type is always an integer (AIS message type 1–27)
+    try:
+        vessel["msg_type"] = int(msg.get("type", 0))
+    except (TypeError, ValueError):
+        vessel["msg_type"] = None
     return vessel
 
 
@@ -58,10 +62,13 @@ def _run_live(duration_secs: int) -> dict:
     if err:
         return {"error": "binary_missing", "binary": BINARY, "tip": err}
 
-    # -d :0  = first SoapySDR device
-    # -o 4   = JSON output to stdout, one object per line
-    # -v 0   = suppress informational chatter
-    cmd = [BINARY, "-d", ":0", "-o", "4", "-v", "0"]
+    # Device selector: SDRplay-specific SoapySDR driver string.
+    # Override with SDR_SOAPY_DEVICE env var if the Pi has multiple SDR devices.
+    import os as _os
+    device = _os.environ.get("SDR_SOAPY_DEVICE", "driver=sdrplay")
+    # -o 4 = JSON output to stdout, one object per line
+    # -v 0 = suppress informational chatter
+    cmd = [BINARY, "-d", device, "-o", "4", "-v", "0"]
 
     vessels: list[dict] = []
     stderr_lines: list[str] = []

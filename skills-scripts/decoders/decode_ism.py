@@ -48,8 +48,10 @@ def _sanitize_device(msg: dict) -> dict:
         elif isinstance(v, (int, float)):
             device[k] = v
         elif isinstance(v, str):
-            # Numeric strings pass through as strings, text gets sanitized
-            device[k] = sanitize_value(v) if not re.match(r"^[\d.+-]+$", v) else v
+            # Purely numeric/timestamp strings pass through; anything else is sanitized.
+            # Pattern covers: numbers, decimals, signs, ISO timestamps (-, :, T, space).
+            # Dash must be at end of character class to avoid accidental range.
+            device[k] = v if re.fullmatch(r"[\d.+:T Z-]+", v) else sanitize_value(v)
         else:
             device[k] = v
     return device

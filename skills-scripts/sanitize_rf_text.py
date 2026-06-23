@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 _INJECTION_PATTERNS = [
+    # OpenAI / Anthropic chat delimiters
     r"---INST---",
     r"\[INST\]",
     r"\[/INST\]",
@@ -31,9 +32,29 @@ _INJECTION_PATTERNS = [
     r"<\|fim_suffix\|>",
     r"<\|fim_middle\|>",
     r"\[SYSTEM\]",
+    # Llama-2 / Mistral / Phi role markers
+    r"<<SYS>>",
+    r"<</SYS>>",
+    r"<SYS>",
+    r"</SYS>",
+    r"<s>",
+    r"</s>",
+    r"<\|system\|>",
+    r"<\|user\|>",
+    r"<\|assistant\|>",
+    # Common markdown/text role markers (anchored at line start to reduce false positives)
+    r"(?m)^\s*###\s*System",
+    r"(?m)^\s*###\s*Human",
+    r"(?m)^\s*###\s*Assistant",
     r"(?m)^\s*Human\s*:",
     r"(?m)^\s*Assistant\s*:",
     r"(?m)^\s*System\s*:",
+    # Imperative override phrases (case-insensitive)
+    r"(?i)ignore\s+(?:all\s+)?(?:previous|prior)\s+instructions?",
+    r"(?i)disregard\s+(?:all\s+)?(?:previous|prior)\s+instructions?",
+    r"(?i)forget\s+(?:all\s+)?(?:previous|prior)\s+instructions?",
+    r"(?i)new\s+instructions?:\s",
+    r"(?i)override\s+(?:system\s+)?prompt",
 ]
 
 _ANSI_ESC = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]|\x1b[()][AB012]|\x1b.")
@@ -78,7 +99,7 @@ def sanitize(text: str) -> tuple[str, list[str]]:
     for pat in _INJECTION_PATTERNS:
         cleaned = re.sub(pat, "[INJECTION REMOVED]", text)
         if cleaned != text:
-            warnings.append(f"removed: injection pattern")
+            warnings.append(f"removed: injection pattern ({pat[:30]})")
         text = cleaned
 
     # Length cap

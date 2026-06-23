@@ -58,21 +58,26 @@ def main():
     for row in to_delete:
         p = Path(row["path"])
         size = row["size_bytes"] or 0
+
         if p.exists():
-            if not args.dry_run:
+            if args.dry_run:
+                deleted_files += 1
+                freed_bytes += size
+            else:
                 try:
                     p.unlink()
                     deleted_files += 1
-                    freed_bytes += p.stat().st_size if False else size
+                    freed_bytes += size
                 except OSError:
+                    # Can't delete the file (permission/NFS/etc.) — skip this
+                    # row entirely; do NOT remove the DB record so the next run
+                    # will retry.
                     skipped_files += 1
                     continue
-            else:
-                deleted_files += 1
-                freed_bytes += size
         else:
-            # File already gone — still remove the DB row
-            pass
+            # File already gone (deleted by another process or previous partial run).
+            # Still remove the orphan DB row; count the space as previously freed.
+            freed_bytes += size
 
         if not args.dry_run:
             conn.execute("DELETE FROM artifacts WHERE id = ?", (row["id"],))

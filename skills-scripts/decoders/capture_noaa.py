@@ -55,18 +55,18 @@ def _run_live(freq_hz: int, duration_secs: int) -> dict:
     tmpdir = tempfile.mkdtemp(prefix="satdump-")
     out_dir = Path(tmpdir)
 
-    # satdump live pipeline: IQ source → APT decoder → PNG output
+    # satdump live command: satdump live <pipeline> <output_dir> [options]
+    # --timeout N causes satdump to exit after N seconds; post-processing runs
+    # automatically before satdump exits (no separate --finish_processing flag).
     cmd = [
         BINARY,
         "live",
-        "NOAA_APT",              # pipeline name
-        "baseband",              # output type
-        "--source", "sdrplay",   # SDRplay RSP1B native source
+        "NOAA_APT",      # pipeline name
+        str(out_dir),    # output directory (2nd positional arg)
+        "--source", "sdrplay",
         "--samplerate", "1000000",
         "--frequency", str(freq_hz),
-        "--duration", str(duration_secs),
-        "--output", str(out_dir),
-        "--finish_processing",   # process after capture completes
+        "--timeout", str(duration_secs),
     ]
 
     try:
